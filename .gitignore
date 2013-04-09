@@ -1,6 +1,13 @@
 # C extensions
 *.so
 
+#folders
+k-means
+naviesvm
+
+#images
+*.png
+
 # Packages
 *.egg
 *.egg-info
