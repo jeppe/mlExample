@@ -15,9 +15,9 @@ class Kmeans(object):
 	centers = []
 	center_update = 0
 
-	def __init__(self, k ,dimension,source,threshold = 0.002):
+	def __init__(self, k ,source,threshold = 0.002):
 		super(Kmeans, self).__init__()
-		self.dimension = dimension
+		self.dimension = len(source[0])
 		self.k = k
 		
 		self.threshold = threshold
