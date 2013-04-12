@@ -7,9 +7,11 @@ import random
 import cPickle as cpickle
 
 class Kmeans(object):
-	"""docstring for Kmeans"""
-	p = 0
+	"""docstring for Kmeans
+		call it by 'kmeans = Kmeans(3,points)' and impelement it by calling kmeans.exe()
+		Kmeans could return a label list,whose index is the id for each entity
 
+	"""
 	center_update = 0
 
 	def __init__(self, k ,source,threshold = 0.002):
@@ -98,6 +100,8 @@ if len(sample.read()) == 0:
 else:
 	pass
 '''
+
+
 if __name__ == '__main__':
 	#create samples
 	sample = open('sample.plk','r')
