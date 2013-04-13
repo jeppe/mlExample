@@ -7,10 +7,9 @@ import random
 import cPickle as cpickle
 
 class Kmeans(object):
-	"""docstring for Kmeans
+	""" docstring for Kmeans
 		call it by 'kmeans = Kmeans(3,points)' and impelement it by calling kmeans.exe()
 		Kmeans could return a label list,whose index is the id for each entity
-
 	"""
 	center_update = 0
 
@@ -39,7 +38,7 @@ class Kmeans(object):
 			self.snapshot(movieclicks = ite)
 			J = self.cost()
 
-			if ite > 12:
+			if ite > 15:
 				break
 		return self.source[:,self.dimension].tolist()
 
@@ -88,6 +87,41 @@ class Kmeans(object):
 
 		pass
 
+class SpectralCluster(object):
+	"""docstring for SpectralCluster(SC)
+		SC classify the items based on the item-item similarity matrix,which is denoted as A.
+		First,we calculate the similarity between each pair of items.
+		Second,construct a Laplace Matrix D. ( D = B - A ) B is a diagnose matrix,whose diagnose element
+		is the sum of corresponding column of A
+		Third,we acquire the eigenvalue of D and sort it by descenting order.
+		Then,we also obtain the corresponding eigenvalue vectors of each eigenvalue,which is column vector.
+		We organize them by the descenting order of the eigenvalue to build a matrix,each row of which is
+		the feature for corresponding user.
+		Finally,we only abstract the top-K columns and cluster them by k-means method. 
+	"""
+
+	def __init__(self, simatrix,K):
+		super(SpectralCluster, self).__init__()
+		self.simatrix = simatrix
+		self.k = K
+		self.dimension = len(simatrix[0])
+
+	def matrixL(self):
+		D = numpy.zeros( (self.dimension,self.dimension) )#define the diagnose matrix D
+		for i in range(0,self.dimension):
+			D[i][i] = self.simatrix[:,i].sum()
+		L = D - self.simatrix#construct the Laplace Matrix
+		evals,evec = numpy.linalg.eig(L)#return the eigenvalues and eigenvalues vectors
+		idx = evals.argsort()
+		evec = evec[:,idx]
+		evec = evec[:,0:self.k]
+		return evec
+
+	def exe(self):
+		kmeans= Kmeans( 3,self.matrixL() )
+		labels = kmeans.exe()#impelement clustering
+		return labels
+
 '''
 #create the sample points and save them into the plk file
 sample = open('sample.plk','r')
@@ -107,9 +141,17 @@ if __name__ == '__main__':
 	sample = open('sample.plk','r')
 	points = cpickle.load(sample)
 
-	kmeans = Kmeans(3,points)
-	kmeans.exe()
+	#kmeans = Kmeans(3,points)
+	#kmeans.exe()
 
-	print 'ok'
+	sim = numpy.zeros( (len(points),len(points) ))	
+	for i in range(0,len(points) - 1):
+		for j in range(i+1,len(points)):
+			sim[i][j] = points[i][0] - points[j][0]
+			sim[j][i] = points[i][0] - points[j][0]
+
+	SC = SpectralCluster(sim,3)
+	labels = SC.exe()
+	print labels
 	sample.close()
 
