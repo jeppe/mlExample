@@ -25,7 +25,7 @@ class Kmeans(object):
 		for i in range(0,len(source)):
 			for j in range(0,self.dimension):
 				self.source[i][j] = source[i][j]
-			self.source[i][self.dimension] = int( random.uniform(0,k) )
+			self.source[i][self.dimension] = random.randint(0,k)
 
 	def exe(self):
 		J = 1.
@@ -35,7 +35,7 @@ class Kmeans(object):
 			print 'iteration time->',ite
 			self.update_cluster()
 			self.update_centers()
-			self.snapshot(movieclicks = ite)
+			#self.snapshot(movieclicks = ite)
 			J = self.cost()
 
 			if ite > 15:
@@ -71,8 +71,14 @@ class Kmeans(object):
 			center_point[int(self.source[i][self.dimension])] += self.source[i][0:self.dimension]
 
 			center_counter[ int(self.source[i][self.dimension])] += 1
-
-		self.centers = numpy.array( [center_point[i] / center_counter[i]  for i in range(0,len(center_point))])
+		cp = []
+		for i in range(0,len(center_point)):
+			if center_counter[i] != 0:
+				cp.append(center_point[i] / center_counter[i])
+			else:
+				cp.append(center_point[i])
+		#self.centers = numpy.array( [center_point[i] / center_counter[i]  for i in range(0,len(center_point))])
+		self.centers = numpy.array( cp )
 
 	def snapshot(self,movieclicks = 6):
 		#colors = [[random.random(),random.random(),random.random()] for value in range(0,self.k)]
@@ -112,13 +118,21 @@ class SpectralCluster(object):
 			D[i][i] = self.simatrix[:,i].sum()
 		L = D - self.simatrix#construct the Laplace Matrix
 		evals,evec = numpy.linalg.eig(L)#return the eigenvalues and eigenvalues vectors
+
+		b = sorted(evals)
+		index = 0
+		for i in range(0,len(b)):
+			if b[i]  != 0:
+				index = i
+				break
+
 		idx = evals.argsort()
 		evec = evec[:,idx]
-		evec = evec[:,0:self.k]
+		evec = evec[:,index:index + self.k]
 		return evec
 
 	def exe(self):
-		kmeans= Kmeans( 3,self.matrixL() )
+		kmeans= Kmeans( self.k,self.matrixL() )
 		labels = kmeans.exe()#impelement clustering
 		return labels
 
