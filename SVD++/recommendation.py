@@ -89,7 +89,7 @@ def rmse(items_test,item_warehouse):
 	for item in items_test:
 		if item in item_warehouse:
 			record += 1
-			rmse += abs(item_warehouse[item]['score'] - items_test[item] )
+			rmse += (item_warehouse[item]['score'] - items_test[item] )**2
 
 
 	return [rmse,record]

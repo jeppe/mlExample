@@ -19,78 +19,85 @@ from  math import sqrt
 	@param:item_warehouse,a dict whose key is id of each item,value is a embed
 	dict including 'score' and 'feature
 '''
+rmse_local = 0.0
 
-dimention = 10
+for v in range(0,5):
+	dimention = 10
 
-customer =dict()
-tester   = dict()
-train_dict = dict()
+	customer =dict()
+	tester   = dict()
+	train_dict = dict()
 
-'''building user objects and item warehous 
-'''
-with open('./ua_train.txt','r') as train:
-	for link in train.readlines():
-		link = link.strip()
-		link = link.split('	')
-		if link[0] not in customer:
-			customer[link[0]] = {'feature':[random.uniform(0.0,value / value) for value in range(1,dimention + 1)]
-								,'items':{link[1]:float(link[2]) }}
-		else:
-			if link[1] not in customer[link[0]]['items']:
-				customer[link[0]]['items'][link[1]] = float(link[2])
+	'''building user objects and item warehous 
+	'''
+	with open('E:\ly\projects\python\memory\\sequence\\1Mcluster_train.txt','r') as train:
+		for link in train.readlines():
+			link = link.strip()
+			link = link.split('	')
+			if link[0] not in customer:
+				customer[link[0]] = {'feature':[random.uniform(0.0,value / value) for value in range(1,dimention + 1)]
+									,'items':{link[1]:float(link[2]) }}
+			else:
+				if link[1] not in customer[link[0]]['items']:
+					customer[link[0]]['items'][link[1]] = float(link[2])
 
-with open('./ua_test.txt','r') as test:
+	with open('E:\ly\projects\python\memory\\treasure\\1Mtest.txt','r') as test:
 
-	for link in test.readlines():
-		link = link.strip()
-		link = link.split('	')
+		for link in test.readlines():
+			link = link.strip()
+			link = link.split('	')
 
-		if link[0] not in tester:
-			tester[link[0]] = {link[1]:float(link[2])}
-		else:
-			tester[link[0]][link[1]] = float(link[2])
+			if link[0] not in tester:
+				tester[link[0]] = {link[1]:float(link[2])}
+			else:
+				tester[link[0]][link[1]] = float(link[2])
 
 
-print len(customer),len(tester)
+	print len(customer),len(tester)
 
 
 #building the item_warehouse and execute SGD to update features of user and item
 
-item_warehouse = dict()
-speed = 0.01
-penalty = 0.001
+	item_warehouse = dict()
+	speed = 0.01
+	penalty = 0.01
 
-datas = open('./ua_train.txt','r')
+	datas = open('E:\ly\projects\python\memory\\sequence\\1Mcluster_train.txt','r')
 
-for link in datas.readlines():
-	link  = link.strip()
+	for link in datas.readlines():
+		link  = link.strip()
 
-	link  = link.split('	')
-#	if int(link[2]) >= 3:
-	if link[1] not in item_warehouse:
-		item_warehouse[link[1]] = {'score':0.0,'feature':[random.uniform(0,value / value) for value in range(1,dimention + 1)]}
+		link  = link.split('	')
+	#	if int(link[2]) >= 3:
+		if link[1] not in item_warehouse:
+			item_warehouse[link[1]] = {'score':0.0,'feature':[random.uniform(0,value / value) for value in range(1,dimention + 1)]}
 
-	recommendation.SGD(customer,item_warehouse,link,speed,penalty)
+		recommendation.SGD(customer,item_warehouse,link,speed,penalty)
 
 
-ranking_score = 0.0
-rmse    = 0.0
-test_records = 0
-counter = 0
-for user in customer:
-	counter += 1
-	recommendation.init_item_warehouse(item_warehouse)
-	for item in item_warehouse:
-		if item not in customer[user]['items']:
-			item_warehouse[item]['score'] = vector.dot(customer[user]['feature'],item_warehouse[item]['feature'])
+	ranking_score = 0.0
+	rmse    = 0.0
+	test_records = 0
+	counter = 0
+	for user in customer:
+		counter += 1
+		recommendation.init_item_warehouse(item_warehouse)
+		for item in item_warehouse:
+			if item not in customer[user]['items']:
+				score = vector.dot(customer[user]['feature'],item_warehouse[item]['feature'])
+				if score > 5:
+					score = 5.
 
-	if user in tester:
-		result = recommendation.rmse(tester[user],item_warehouse)
-		rmse += result[0]
-		test_records += result[1]
+				item_warehouse[item]['score'] = score
 
-print rmse,test_records
-print rmse * 1.0 / test_records
+		if user in tester:
+			result = recommendation.rmse(tester[user],item_warehouse)
+			rmse += result[0]
+			test_records += result[1]
+
+#	print rmse,test_records
+	rmse_local += sqrt(rmse * 1.0 / test_records)
+print rmse_local / 5.
 
 '''	if user in tester:
 		test_records += len(tester[user])
